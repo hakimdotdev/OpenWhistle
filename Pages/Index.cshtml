@@ -7,19 +7,19 @@ ViewData["Title"] = "Dashboard";
 
 <div class="container mx-auto p-4">
     <div class="grid grid-cols-4 gap-4 mb-4">
-        <div class="bg-white rounded-lg p-4 shadow">
+        <div class="bg-white rounded-lg p-4 shadow cursor-pointer hover:shadow-lg" onclick="location.href='/reports?status=Open'">
             <div class="text-gray-500">Open Reports</div>
             <div class="text-3xl font-bold">@Model.OpenReportsCount</div>
         </div>
-        <div class="bg-white rounded-lg p-4 shadow">
+        <div class="bg-white rounded-lg p-4 shadow cursor-pointer hover:shadow-lg" onclick="location.href='/reports?status=Unopened'">
             <div class="text-gray-500">Unopened Reports</div>
             <div class="text-3xl font-bold">@Model.UnopenedReportsCount</div>
         </div>
-        <div class="bg-white rounded-lg p-4 shadow">
+        <div class="bg-white rounded-lg p-4 shadow cursor-pointer hover:shadow-lg" onclick="location.href='/reports?status=ConfirmedReception'">
             <div class="text-gray-500">Confirmed Reception</div>
             <div class="text-3xl font-bold">@Model.ConfirmedReceptionCount</div>
         </div>
-        <div class="bg-white rounded-lg p-4 shadow">
+        <div class="bg-white rounded-lg p-4 shadow cursor-pointer hover:shadow-lg" onclick="location.href='/reports?status=WithoutActions'">
             <div class="text-gray-500">Reports Without Actions</div>
             <div class="text-3xl font-bold">@Model.ReportsWithoutActionsCount</div>
         </div>
@@ -34,7 +34,7 @@ ViewData["Title"] = "Dashboard";
                 <li class="flex justify-between items-center mb-2">
                     <div>
                         <div class="font-bold">@report.Id</div>
-                        <div class="text-gray-500">Deadline: @report.Description</div>
+                        <div class="text-gray-500">@report.Description</div>
                     </div>
                     <div>@report.Deadline.ToString("dd. MMMM yyyy")</div>
                 </li>
@@ -48,12 +48,21 @@ ViewData["Title"] = "Dashboard";
                 {
                 <li class="flex justify-between items-center mb-2">
                     <div class="font-bold">@item.Id</div>
-                    <div>@item.DateCreated.ToString("dd. MMMM yyyy")</div>
+                    <div>
+                        <div>@item.DateCreated.ToString("dd. MMMM yyyy")</div>
+                        <div class="text-gray-500 text-sm">@item.DateCreated.ToString("HH:mm")</div>
+                    </div>
                 </li>
                 }
             </ul>
         </div>
     </div>
+    @{
+    int currentPage = Model.Reports.CurrentPage;
+    int pageSize = Model.Reports.PageSize;
+    int totalReports = Model.Reports.Count;
+    int totalPages = (int)Math.Ceiling((double)totalReports / pageSize);
+    }
 
     <div class="bg-white rounded-lg p-4 shadow">
         <div class="text-gray-500 mb-2">Reports</div>
@@ -70,13 +79,12 @@ ViewData["Title"] = "Dashboard";
                 <tbody class="text-gray-700">
                 @foreach (var report in Model.Reports)
                 {
-                <tr>
+                <tr class="hover:bg-gray-100 cursor-pointer" onclick="location.href='/report/details/@report.Id'">
                     <td class="text-left py-3 px-4">@report.Id</td>
                     <td class="text-left py-3 px-4">@report.AssignedTo</td>
                     <td class="text-left py-3 px-4">@report.Deadline.ToString("dd. MMMM yyyy")</td>
                     <td class="text-left py-3 px-4">
                         <div class="progress-container">
-                            @* Define the progress steps *@
                             @{
                             var statusSteps = Enum.GetValues(typeof(ReportStatus)).Cast<ReportStatus>().ToList();
                             var currentStatusIndex = statusSteps.IndexOf(report.Status);
@@ -100,6 +108,15 @@ ViewData["Title"] = "Dashboard";
                 </tbody>
             </table>
         </div>
+        <!-- Pagination Controls -->
+        <div class="mt-4 flex justify-between items-center">
+            <a asp-page="./Index" asp-route-pageIndex="@(Model.Reports.CurrentPage - 1)" class="@(Model.Reports.HasPreviousPage ? "" : "disabled")">Previous</a>
+            <span class="text-gray-600">Page @Model.Reports.CurrentPage of @Model.Reports.TotalPages</span>
+            <a asp-page="./Index" asp-route-pageIndex="@(Model.Reports.CurrentPage + 1)" class="@(Model.Reports.HasNextPage ? "" : "disabled")">Next</a>
+        </div>
+
+
+
     </div>
 
     <style>
@@ -128,6 +145,15 @@ ViewData["Title"] = "Dashboard";
         }
         .progress-separator.active {
             background-color: #50555e;
+        }
+        .cursor-pointer {
+            cursor: pointer;
+        }
+        .hover\:bg-gray-100:hover {
+            background-color: #f7fafc;
+        }
+        .hover\:shadow-lg:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
     </style>
 
