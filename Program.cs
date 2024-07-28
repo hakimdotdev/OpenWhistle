@@ -5,10 +5,36 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorPages();
 
+var jwtKeyEnv = Environment.GetEnvironmentVariable("OPENWHISTLE_JWT_KEY") ?? throw new InvalidOperationException("JWT_KEY_ENV");
+var jwtIssuerEnv = Environment.GetEnvironmentVariable("OPENWHISTLE_ISSUER_KEY") ?? throw new InvalidOperationException("JWT_ISSUER_ENV");
+var jwtAudienceEnv = Environment.GetEnvironmentVariable("OPENWHISTLE_AUDIENCE_KEY") ?? throw new InvalidOperationException("JWT_AUDIENCE_ENV");
+
+builder.Services.AddAuthentication(options =>
+                                   {
+                                       options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                                       options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                                   })
+    .AddJwtBearer(options =>
+                  {
+                      options.TokenValidationParameters = new TokenValidationParameters
+                      {
+                          ValidateIssuer = true,
+                          ValidateAudience = true,
+                          ValidateLifetime = true,
+                          ValidateIssuerSigningKey = true,
+                          ValidIssuer = jwtIssuerEnv,
+                          ValidAudience = jwtAudienceEnv,
+                          IssuerSigningKey = new SymmetricSecurityKey(Convert.FromBase64String(jwtKeyEnv))
+                      };
+                  });
+
+builder.Services.AddAuthorization();
+
+// Add services to the container.
 // Get max file size env
 var maxFileSizeEnv = Environment.GetEnvironmentVariable("OPENWHISTLE_FILEUPLOAD_MAXFILESIZE");
-var maxFileSize = maxFileSizeEnv != null
-                      ? int.Parse(maxFileSizeEnv) * 1024 * 1024
+int maxFileSize = int.TryParse(maxFileSizeEnv, out var parsedValue) 
+                      ? parsedValue * 1024 * 1024 
                       : 128 * 1024 * 1024;
 // set form file upload length limit
 builder.Services.Configure<FormOptions>(options => { options.MultipartBodyLengthLimit = maxFileSize; });
@@ -34,8 +60,10 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
     .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<OpenWhistleDbContext>();
 
+// builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
