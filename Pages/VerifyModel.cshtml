@@ -1,0 +1,32 @@
+@page "/verify"
+@model VerifyModel
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+<div class="flex justify-center items-center min-h-screen">
+    <div class="bg-white rounded-lg shadow-lg p-8 w-full max-w-lg border border-gray-200">
+        <h3 class="text-2xl font-bold text-gray-900 mb-6 text-center">Enter PIN</h3>
+        @if (TempData["InvalidPin"] != null)
+        {
+            <div class="flex items-center p-4 mb-4 text-sm text-red-800 border border-red-300 rounded-lg bg-red-50" role="alert">
+                <svg class="flex-shrink-0 inline w-4 h-4 me-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
+                </svg>
+                <span class="sr-only">Info</span>
+                <div>
+                    <span class="font-medium">Verification Failed!</span> Invalid Pin for specified report.
+                </div>
+            </div>
+        }
+
+        <form method="post" class="needs-validation" novalidate>
+            <div class="mb-4">
+                <label class="block text-gray-900 font-semibold mb-2">PIN</label>
+                <input asp-for="EnteredPin" class="form-control w-full p-3 rounded-lg bg-gray-100 text-gray-900 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-600" />
+                <span asp-validation-for="EnteredPin" class="text-red-400 text-sm"></span>
+            </div>
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-shadow duration-300 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2">
+                Submit
+            </button>
+        </form>
+    </div>
+</div>
