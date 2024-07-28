@@ -1,26 +1,52 @@
-namespace OpenWhistle.Models;
+using System;
+using System.Collections.Generic;
+using OpenWhistle.Models.Common;
 
-public class WhistleblowerReport(string description) : BaseEntity
+namespace OpenWhistle.Models
 {
-    public bool IsAssigned { get; set; }= false;
-    public string AssignedTo { get; set; }
-    public string Description { get; init; } = description;
-    public DateTime Deadline
+    public class WhistleblowerReport : BaseEntity
     {
-        get
+        public WhistleblowerReport(){}
+        public WhistleblowerReport(string description)
         {
-            switch (Status)
-            {
-                case ReportStatus.Acknowledged:
-                    return DateCreated.AddMonths(3);
-                case ReportStatus.Received: 
-                case ReportStatus.Read:
-                    return DateCreated.AddDays(7);
-                default:
-                    return DateCreated.AddDays(7);
-            }
+            Description = description;
+            DateOfOccurrence = null;
+            Files = new List<byte[]>();
+            Status = ReportStatus.Received;
+            IsAssigned = false;
+        }
+        
+        public WhistleblowerReport(string description, DateTime ?dateOfOccurrence)
+        {
+            Description = description;
+            DateOfOccurrence = dateOfOccurrence;
+            Files = new List<byte[]>();
+            Status = ReportStatus.Received;
+            IsAssigned = false;
+        }
+
+        public bool IsAssigned { get; set; } = false;
+        public string AssignedTo { get; set; } = String.Empty;
+        public string Description { get; init; }
+        public DateTime? DateOfOccurrence { get; init; }
+        public List<byte[]> Files { get; }
+        public ReportStatus Status { get; set; } = ReportStatus.Received;
+        public List<FollowUpAction> ActionsTaken { get; set; }
+
+        public DateTime Deadline => Status switch
+        {
+            ReportStatus.Acknowledged => DateCreated.AddMonths(3),
+            ReportStatus.Received or ReportStatus.Read => DateCreated.AddDays(7),
+            _ => DateCreated.AddDays(7),
+        };
+
+        public List<ChatMessage> ChatMessages { get; set; }
+        public string AccessPin { get; set; }
+
+        public void AddFile(byte[] file)
+        {
+            Files.Add(file);
         }
     }
-
-    public ReportStatus Status { get; set; } = ReportStatus.Received;
+    
 }
