@@ -1,42 +1,52 @@
-using Microsoft.AspNetCore.Http.HttpResults;
+using System.Security.Cryptography;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using OpenWhistle.Models;
+using OpenWhistle.Services;
 
-namespace OpenWhistle.Pages
+namespace OpenWhistle.Pages;
+
+public class SubmitModel(IReportService reportService) : PageModel
 {
-    public class SubmitModel : PageModel
+    [BindProperty] public string ReportDescription { get; set; }
+
+    [BindProperty] public DateTime? DateOfOccurrence { get; set; }
+
+    [BindProperty] public TimeSpan? TimeOfOccurrence { get; set; }
+
+    [BindProperty] public IFormFileCollection Upload { get; set; }
+
+    public Guid? Id { get; set; }
+
+    public string? GeneratedPin { get; set; }
+
+    public async Task<IActionResult> OnPostAsync()
     {
-        public void OnGet()
+        var totalSize = Upload.Sum(f => f.Length);
+
+        var fileBytesList = new List<byte[]>();
+
+        foreach (var formFile in Upload.Where(f => f.Length > 0))
         {
+            using var memoryStream = new MemoryStream();
+            await formFile.CopyToAsync(memoryStream);
+            fileBytesList.Add(memoryStream.ToArray());
         }
 
-        public async Task<IActionResult> OnPostAsync()
+        var dateTimeOfOccurrence = DateOfOccurrence?.Date ?? DateTime.UtcNow;
+
+        if (TimeOfOccurrence.HasValue) dateTimeOfOccurrence = dateTimeOfOccurrence.Add(TimeOfOccurrence.Value);
+        
+        GeneratedPin = new string(Array.ConvertAll(RandomNumberGenerator.GetBytes(16), b => "0123456789"[b % 10]));
+
+
+        if (fileBytesList.Count != 0)
         {
-            long size = Upload.Sum(f => f.Length); // TODO: additional handling of the file size
-
-            var filePath = Path.GetTempFileName();
-
-            foreach (var formFile in Upload.Where(formFile => formFile.Length > 0))
-            {
-                byte[] fileByes;
-
-                await using var stream = new FileStream(filePath, FileMode.Create);
-                using var reader = new BinaryReader(stream);
-                fileByes = reader.ReadBytes((int)stream.Length);
-
-                WhistleblowerReport report = new(ReportDescription); // probably better off in a command / service class
-                //TODO: Save
-            }
-            
+            Id = reportService.CreateReportAsync(ReportDescription, GeneratedPin, dateTimeOfOccurrence, fileBytesList).Result.Id;
             return Page();
         }
-        [BindProperty] public List<IFormFile> Upload { get; set; }
-        [BindProperty] 
-        public string ReportDescription { get; set; }
-        [BindProperty] 
-        public DateTime DateOfOccurrence { get; set; }
 
-        public TimeSpan TimeOfOccurence { get; set; }
+        Id = reportService.CreateReportAsync(ReportDescription, GeneratedPin, dateTimeOfOccurrence).Result.Id;
+        
+        return Page();
     }
 }
