@@ -13,6 +13,27 @@ var maxFileSize = maxFileSizeEnv != null
 // set form file upload length limit
 builder.Services.Configure<FormOptions>(options => { options.MultipartBodyLengthLimit = maxFileSize; });
 
+var connectionString = Environment.GetEnvironmentVariable("OPENWHISTLE_SQLITE_CONNSTRING");
+string dbHost = Environment.GetEnvironmentVariable("OPENWHISTLE_DB_HOST") ?? throw new InvalidOperationException();
+string dbName = Environment.GetEnvironmentVariable("OPENWHISTLE_DB_DATABASE") ?? throw new InvalidOperationException();
+string dbUser = Environment.GetEnvironmentVariable("OPENWHISTLE_DB_USERNAME") ?? throw new InvalidOperationException();
+string dbPassword = Environment.GetEnvironmentVariable("OPENWHISTLE_DB_PASSWORD") ?? throw new InvalidOperationException();
+
+var connString = $"server={dbHost};database={dbName};uid={dbUser};password={dbPassword}";
+builder.Services.AddDbContextPool<OpenWhistleDbContext>(options => options.UseMySql(connString, ServerVersion.AutoDetect(connString)));
+builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
+                                                         {
+                                                             options.User.RequireUniqueEmail = false;
+                                                             
+                                                             options.Password.RequireDigit = false;
+                                                             options.Password.RequiredLength = 14;
+                                                             options.Password.RequireNonAlphanumeric = true; 
+                                                             options.Password.RequireUppercase = true;
+                                                             options.Password.RequireLowercase = true;
+                                                         })
+    .AddRoles<IdentityRole>()
+    .AddEntityFrameworkStores<OpenWhistleDbContext>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
