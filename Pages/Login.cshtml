@@ -1,0 +1,33 @@
+@page
+@using Microsoft.AspNetCore.Mvc.RazorPages
+@model LoginModel
+@{
+    ViewData["Title"] = "Login";
+}
+
+<div class="flex justify-center items-center min-h-screen">
+    <div class="bg-white rounded-lg shadow-lg p-8 w-full max-w-lg border border-gray-200">
+        <h3 class="text-2xl font-bold text-gray-900 mb-6 text-center">Login</h3>
+
+        @if (!String.IsNullOrWhiteSpace(Model.ErrorMessage))
+        {
+            <div class="mb-4 text-red-500 text-center">
+               <strong>@Model.ErrorMessage</strong>  @* FIXME: *@
+            </div>
+        }
+
+        <form method="post" class="needs-validation" novalidate>
+            <div class="mb-4">
+                <label asp-for="Input.Username" class="block text-gray-900 font-semibold mb-2">Username</label>
+                <input asp-for="Input.Username" class="form-control w-full p-3 rounded-lg bg-gray-100 text-gray-900 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-600"/>
+                <span asp-validation-for="Input.Username" class="text-red-400 text-sm"></span>
+            </div>
+            <div class="mb-4">
+                <label asp-for="Input.Password" class="block text-gray-900 font-semibold mb-2">Password</label>
+                <input asp-for="Input.Password" type="password" class="form-control w-full p-3 rounded-lg bg-gray-100 text-gray-900 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-600"/>
+                <span asp-validation-for="Input.Password" class="text-red-400 text-sm"></span>
+            </div>
+            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg shadow-md transition-shadow duration-300 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2">Login</button>
+        </form>
+    </div>
+</div>
