@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openwhistle-deployment
+  namespace: openwhistle
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: openwhistle
+  template:
+    metadata:
+      labels:
+        app: openwhistle
+    spec:
+      containers:
+        - name: openwhistle
+          image: mcr.microsoft.com/dotnet/aspnet:8.0-alpine
+          ports:
+            - containerPort: 4009
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: "Development"

@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: openwhistle-service
+  namespace: openwhistle
+spec:
+  type: ClusterIP
+  selector:
+    app: openwhistle
+  ports:
+    - port: 80
+      targetPort: 4009
+      protocol: TCP
+      name: http
