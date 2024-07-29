@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices.JavaScript;
 
-namespace OpenWhistle.Models;
+namespace OpenWhistle.Models.Common;
 
 public class BaseAuditableEntity : BaseEntity
 {

@@ -1,4 +1,4 @@
-namespace OpenWhistle.Models;
+namespace OpenWhistle.Models.Common;
 
 public abstract class BaseEntity
 {
